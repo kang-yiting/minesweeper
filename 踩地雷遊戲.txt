@@ -1,0 +1,381 @@
+#include<stdio.h>
+#include<windows.h>
+#include<stdlib.h>
+#include<time.h>
+#include<conio.h>
+#include<queue>
+#include<ctype.h>
+#define A 17	//¦a¹Ïªº°ª
+#define B 17	//¦a¹Ïªº¼e
+#define C 30	//¹pªºÁ`¼Æ
+using namespace std;
+
+//¥þ°ì©ÊÅÜ¼Æ
+DWORD a, b;
+char map[A][B], news, spare;
+int BoomTotalNum, floatx, floaty, flag[A][B], flagnum, mode, slect[A][B], game;
+
+//ÃC¦âÄÝ©Ê
+const WORD FORE_BLUE = FOREGROUND_BLUE;	//ÂÅ¦â¤å¦rÄÝ©Ê
+const WORD FORE_GREEN = FOREGROUND_GREEN;	//ºñ¦â¤å¦rÄÝ©Ê
+const WORD FORE_RED = FOREGROUND_RED;	//¬õ¦â¤å¦rÄÝ©Ê
+
+//¶}¾Á¦a¹Ïµ²ºcÅé 
+struct node {
+	int x;
+	int y;
+};
+queue <node> dui;
+
+//¦C¦L¦ì¸m
+void position(int x, int y) {
+	COORD pos = { x,y };
+	HANDLE Out = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(Out, pos);
+}
+
+//ÁôÂÃ´å¼Ð 
+void Hide() {
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO CursorInfo;
+	GetConsoleCursorInfo(handle, &CursorInfo);//Àò¨ú±±¨îÂi´å¼Ð¸ê°T  
+	CursorInfo.bVisible = false; //ÁôÂÃ±±¨îÂi´å¼Ð  
+	SetConsoleCursorInfo(handle, &CursorInfo);//³]©w±±¨îÂi´å¼Ðª¬ºA   
+}
+
+//ªì©l¤Æ
+void Beginning() {
+	while (!dui.empty()) {
+		dui.pop();
+	}
+	game = 1;
+	//BoomTotalNum=C;
+	floatx = A / 2;
+	floaty = B / 2;
+	flagnum = 0;
+	BoomTotalNum = C;
+	mode = 0;
+	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);    //Àò±o¼Ð·Ç¿é¥X¸Ë¸m±±¨î¥N½X  
+	CONSOLE_SCREEN_BUFFER_INFO csbi;                        //©w¸qµøµ¡½w½Ä°Ï¸ê°Tµ²ºcÅé  
+	GetConsoleScreenBufferInfo(handle_out, &csbi);          //Àò±oµøµ¡½w½Ä°Ï¸ê°T
+	int x, y;
+	srand((unsigned)time(0));
+	for (int i = 0; i < A; i++) for (int j = 0; j < B; j++) {
+		map[i][j] = ' ';
+		flag[i][j] = 0;
+		slect[i][j] = 0;
+	}
+	while (BoomTotalNum) {
+		x = rand() % A;
+		y = rand() % B;
+		if (map[x][y] == ' ') {
+			map[x][y] = '@';
+			BoomTotalNum--;
+		}
+	}
+	SetConsoleTextAttribute(handle_out, FORE_GREEN);
+	for (int i = 0; i < A; i++) {
+		for (int j = 0; j < B; j++) printf("¢i");
+		printf("\n");
+	}
+	position(floaty * 2, floatx);
+	SetConsoleTextAttribute(handle_out, FORE_RED);
+	printf("ûß");	//´å¼Ð¦ì¸m
+	position(44, 9);
+	printf("±½¹p¼Ò¦¡");
+	position(44, 5);
+	printf("³Ñ¾l¹p¼Æ¡G%d ", C - flagnum);
+	SetConsoleTextAttribute(handle_out, FORE_GREEN);
+	position(5, 22);
+	printf("«ö¡§ªÅ®æ¡¨¤Á´«¼Ò¦¡");
+	position(5, 23);
+	printf("«ö¡§Enter¡¨½T»{");
+	position(5, 24);
+	printf("«ö¡§¤è¦VÁä¡¨¿ï¾Ü¤è¶ô");
+
+}
+
+//¦C¦L¦a¹Ïªº¤@¶ô¨à 
+void Lump(int xx, int yy) {
+	switch (map[xx][yy]) {
+	case '1': printf("1"); break;	//©P³ò¹pªº¼Æ¶q¡]¤U¦P¡^ 
+	case '2': printf("2"); break;
+	case '3': printf("3"); break;
+	case '4': printf("4"); break;
+	case '5': printf("5"); break;
+	case '6': printf("6"); break;
+	case '7': printf("7"); break;
+	case '8': printf("8"); break;
+	case ' ':
+		if (xx == floatx && yy == floaty) {
+			if (flag[xx][yy] == 0) {
+				if (mode % 2 == 0) printf("ûß");
+				else printf("üG");
+			}
+			else printf("ýG");
+		}
+		else {
+			if (flag[xx][yy] == 0) printf("¢i");
+			else printf("ýG");
+		}
+		break;
+	case '@':
+		if (xx == floatx && yy == floaty) {
+			if (flag[xx][yy] == 0) {
+				if (mode % 2 == 0) printf("ûß");
+				else printf("üG");
+			}
+			else printf("ýG");
+		}
+		else {
+			if (flag[xx][yy] == 0) printf("¢i");
+			else printf("ýG");
+		}
+		break;
+	case 'x': if (floatx == xx && floaty == yy) printf("úC"); else printf("  "); break;	//¤w¸g«õ¶}ªºªÅ¥Õ
+	}
+}
+
+//²¾°Ê´å¼Ð
+void Move() {
+	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);    //Àò±o¼Ð·Ç¿é¥X¸Ë¸m±±¨î¥N½X  
+	CONSOLE_SCREEN_BUFFER_INFO csbi;                        //©w¸qµøµ¡½w½Ä°Ï¸ê°Tµ²ºcÅé  
+	GetConsoleScreenBufferInfo(handle_out, &csbi);          //Àò±oµøµ¡½w½Ä°Ï¸ê°T
+	int xxx, yyy;
+	xxx = floatx;
+	yyy = floaty;
+	switch (news) {
+	case 72: floatx--; break;	//¤W 
+	case 80: floatx++; break;	//¤U 
+	case 75: floaty--; break;	//¥ª 
+	case 77: floaty++; break;	//¥k 
+	}
+	if (floatx == -1) floatx = A - 1; floatx %= A;	//¨âºÝ¬ï¼Ò³B²z 
+	if (floaty == -1) floaty = B - 1; floaty %= B;
+
+	position(yyy * 2, xxx);
+	SetConsoleTextAttribute(handle_out, FORE_GREEN);
+	Lump(xxx, yyy);	//§R°£­ì¦ì¸m
+
+	if (map[floatx][floaty] == 'x') {
+		position(floaty * 2, floatx);
+		printf("  ");
+	}
+
+	position(floaty * 2, floatx);
+	SetConsoleTextAttribute(handle_out, FORE_BLUE);
+	Lump(floatx, floaty);	//§ó·s·s¦ì¸m 
+}
+
+//´¡ºX©M±Æ¹p¼Ò¦¡¤Á´« 
+void Mode() {
+	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);    //Àò±o¼Ð·Ç¿é¥X¸Ë¸m±±¨î¥N½X  
+	CONSOLE_SCREEN_BUFFER_INFO csbi;                        //©w¸qµøµ¡½w½Ä°Ï¸ê°Tµ²ºcÅé  
+	GetConsoleScreenBufferInfo(handle_out, &csbi);          //Àò±oµøµ¡½w½Ä°Ï¸ê°T
+	mode++;
+	SetConsoleTextAttribute(handle_out, FORE_BLUE);
+	position(floaty * 2, floatx);
+	if (mode % 2 == 0) printf("ûß");
+	else printf("üG");
+
+	position(44, 9);
+	if (mode % 2 == 0) {
+		SetConsoleTextAttribute(handle_out, FORE_BLUE);
+		printf("±½¹p¼Ò¦¡");
+	}
+	else {
+		SetConsoleTextAttribute(handle_out, FORE_RED);
+		printf("´¡ºX¼Ò¦¡");
+	}
+}
+
+//¸ÓÂI©P³ò¦a¹p¼Æ 
+int Boomnum(int xx, int yy) {
+	int num = 0;
+	if ((xx - 1 >= 0) && (yy - 1 >= 0) && (map[xx - 1][yy - 1] == '@')) num++;
+	if ((xx - 1 >= 0) && (yy + 0 >= 0) && (map[xx - 1][yy] == '@')) num++;
+	if ((xx - 1 >= 0) && (yy + 1 < B) && (map[xx - 1][yy + 1] == '@')) num++;
+	if ((xx + 0 >= 0) && (yy - 1 >= 0) && (map[xx][yy - 1] == '@')) num++;
+	if ((xx + 0 >= 0) && (yy + 1 < B) && (map[xx][yy + 1] == '@')) num++;
+	if ((xx + 1 < A) && (yy - 1 >= 0) && (map[xx + 1][yy - 1] == '@')) num++;
+	if ((xx + 1 < A) && (yy + 0 >= 0) && (map[xx + 1][yy] == '@')) num++;
+	if ((xx + 1 < A) && (yy + 1 < B) && (map[xx + 1][yy + 1] == '@')) num++;
+	return num;
+}
+
+//§ó·s¦a¹Ï 
+void Open() {
+	node c;
+	node d;
+	while (!dui.empty()) {
+		dui.pop();
+	}
+	c.x = floatx;
+	c.y = floaty;
+	dui.push(c);
+	slect[c.x][c.y] = 1;
+	while (!dui.empty()) {
+		c = dui.front();
+		dui.pop();
+		if (Boomnum(c.x, c.y) != 0) {
+			map[c.x][c.y] = (Boomnum(c.x, c.y) + 48);
+			continue;
+		}
+		else {
+			map[c.x][c.y] = 'x';
+			if ((c.x - 1 >= 0) && (c.y - 1 >= 0) && (map[c.x - 1][c.y - 1] == ' ') && (slect[c.x - 1][c.y - 1] == 0)) {
+				d.x = c.x - 1;
+				d.y = c.y - 1;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x - 1 >= 0) && (c.y - 0 >= 0) && (map[c.x - 1][c.y] == ' ') && (slect[c.x - 1][c.y] == 0)) {
+				d.x = c.x - 1;
+				d.y = c.y - 0;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x - 1 >= 0) && (c.y + 1 < B) && (map[c.x - 1][c.y + 1] == ' ') && (slect[c.x - 1][c.y + 1] == 0)) {
+				d.x = c.x - 1;
+				d.y = c.y + 1;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x - 0 >= 0) && (c.y - 1 >= 0) && (map[c.x][c.y - 1] == ' ') && (slect[c.x][c.y - 1] == 0)) {
+				d.x = c.x - 0;
+				d.y = c.y - 1;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x - 0 >= 0) && (c.y + 1 < B) && (map[c.x][c.y + 1] == ' ') && (slect[c.x][c.y + 1] == 0)) {
+				d.x = c.x - 0;
+				d.y = c.y + 1;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x + 1 < A) && (c.y - 1 >= 0) && (map[c.x + 1][c.y - 1] == ' ') && (slect[c.x + 1][c.y - 1] == 0)) {
+				d.x = c.x + 1;
+				d.y = c.y - 1;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x + 1 < A) && (c.y - 0 >= 0) && (map[c.x + 1][c.y] == ' ') && (slect[c.x + 1][c.y] == 0)) {
+				d.x = c.x + 1;
+				d.y = c.y - 0;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+			if ((c.x + 1 < A) && (c.y + 1 < B) && (map[c.x + 1][c.y + 1] == ' ') && (slect[c.x + 1][c.y + 1] == 0)) {
+				d.x = c.x + 1;
+				d.y = c.y + 1;
+				dui.push(d);
+				slect[d.x][d.y] = 1;
+			}
+		}
+	}
+}
+
+int main() {
+	freopen("±Æ¦W.txt", "r", stdin);
+Relife:	//­«ª±³B
+	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);    //Àò±o¼Ð·Ç¿é¥X¸Ë¸m±±¨î¥N½X  
+	CONSOLE_SCREEN_BUFFER_INFO csbi;                        //©w¸qµøµ¡½w½Ä°Ï¸ê°Tµ²ºcÅé  
+	GetConsoleScreenBufferInfo(handle_out, &csbi);          //Àò±oµøµ¡½w½Ä°Ï¸ê°T
+
+	Hide();		//ÁôÂÃ´å¼Ð
+	Beginning();//ªì©l¤Æ¦a¹Ï
+	a = GetTickCount();
+	while (1) {
+		if (kbhit() != 0) {
+			spare = getch();
+
+			//«ö¨ä¥L
+			if ((spare != (-32)) && (spare != 13) && (spare != ' ')) continue;//¸õ¹L 
+
+			//«öEnter
+			if (spare == 13) {	//½T»{ 
+				//±Æ¹p
+				if (mode % 2 == 0) {
+					if (map[floatx][floaty] == '@'&&flag[floatx][floaty] == 0) {
+						break;	//Ä²¹p
+						game = 0;
+					}
+
+					if (flag[floatx][floaty] == 1) continue;	//¦³ºX¸õ¹L
+					Open();
+					position(0, 0);
+					SetConsoleTextAttribute(handle_out, FORE_GREEN);
+					for (int i = 0; i < A; i++) {
+						for (int j = 0; j < B; j++) Lump(i, j);
+						printf("\n");
+					}
+					position(floaty * 2, floatx);
+					SetConsoleTextAttribute(handle_out, FORE_BLUE);
+					Lump(floatx, floaty);
+				}
+
+				//´¡©ÞºX
+				else {
+
+					//¤£¯à´¡ºXªº¦a¤è
+					if (map[floatx][floaty] == 'x' || (map[floatx][floaty] > '0'&&map[floatx][floaty] < '9'))
+						continue;	//¸õ¹L
+
+					//´¡ºX
+					if (flag[floatx][floaty] == 0) {
+						flagnum++;
+						flag[floatx][floaty] = 1;
+						position(floaty * 2, floatx);
+						SetConsoleTextAttribute(handle_out, FORE_BLUE);
+						Lump(floatx, floaty);
+					}
+
+					//©ÞºX 
+					else {
+						flagnum--;
+						flag[floatx][floaty] = 0;
+						position(floaty * 2, floatx);
+						SetConsoleTextAttribute(handle_out, FORE_BLUE);
+						Lump(floatx, floaty);
+					}
+				}
+			}
+
+			//«öªÅ®æ
+			if (spare == ' ') Mode();	//¤Á´«¼Ò¦¡ 
+
+			//«ö¤è¦VÁä 
+			if (spare == -32) {
+				news = getch();
+				Move();	//²¾°Ê´å¼Ð
+			}
+			for (int i = 0; i < A; i++) for (int j = 0; j < B; j++) if (map[i][j] == 'x' || (map[i][j] > '0'&&map[i][j] < '9')) game++;
+			if (game == A * B - C + 1) break;
+			else game = 1;
+			SetConsoleTextAttribute(handle_out, FORE_RED);
+			position(44, 5);
+			printf("³Ñ¾l¹p¼Æ¡G%d ", C - flagnum);
+		}
+		else Sleep(10);
+		b = GetTickCount();
+		SetConsoleTextAttribute(handle_out, FORE_RED);
+		position(44, 7);
+		printf("¥Î®É¡G");	//¥Î®É 
+		if ((b - a) / 60000 < 10) printf("0");
+		printf("%d:", (b - a) / 60000);
+		if (((b - a) / 1000) % 60 < 10) printf("0");
+		printf("%d:", ((b - a) / 1000) % 60);
+		if (((b - a) / 10) % 100 < 10) printf("0");
+		printf("%d", ((b - a) / 10) % 100);
+	}
+	SetConsoleTextAttribute(handle_out, FORE_RED);
+	position(5, 5);
+	if (game == 1) printf("¹CÀ¸µ²§ô¡I");
+	else printf("®¥³ß³qÃö¡I");
+	position(5, 8);
+	printf("¥ô·NÁä­«ª±");
+	scanf("%c%c", &spare, &spare);
+	system("cls");
+	position(0, 0);
+	goto Relife;
+}
